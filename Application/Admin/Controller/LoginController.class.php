@@ -44,4 +44,10 @@ class LoginController extends Controller{
         ));
         $Verify->entry();
     }
+
+    public function logout(){
+        session('id',null);
+        session('username',null);
+        redirect(U('Admin/Login/login'));
+    }
 }

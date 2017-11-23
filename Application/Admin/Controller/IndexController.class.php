@@ -3,6 +3,15 @@ namespace Admin\Controller;
 use Think\Controller;
 
 class IndexController extends Controller{
+
+    public function __construct()
+    {
+        if(!session('id')){
+            redirect(U('/Admin/Login/login'));
+        }
+        parent::__construct();
+    }
+
     public function index(){
         $this->display();
     }
