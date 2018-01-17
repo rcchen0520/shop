@@ -34,4 +34,35 @@ class GoodsController extends Controller
         }
         $this->display();
     }
+
+    public function delete()
+    {
+        $model = D('goods');
+        $model->delete(I('get.id'));
+        $this->success('操作成功！',U('lst?p='.I('get.p')));
+    }
+
+    public function edit()
+    {
+        if(IS_POST)
+        {
+            $model = D('goods');
+            if($model->create(I('post.'),2))
+            {
+                if(false !== $model->save())
+                {
+                    $this->success('操作成功！', U('lst?p='.I('get.p')));
+                    exit;
+                }
+            }
+            $this->error($model->getError());
+        }
+        //接受商品id
+        $id = I('get.id');
+        //从数据库中获取商品信息
+        $model = M('goods');
+        $info = $model->find($id);
+        $this->assign('info',$info);
+        $this->display();
+    }
 }

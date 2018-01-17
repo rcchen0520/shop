@@ -52,6 +52,56 @@ class GoodsModel extends Model
             }
         }
     }
+    
+    //删除前置方法
+    public function _before_delete($option)
+    {
+        $logo = $this->field('logo,sm_logo')->find($option['where']['id']);
+        //从配置文件中取出图片所在目录
+        $rp = C('IMG_rootPath');
+        unlink($rp.$logo['logo']);
+        unlink($rp.$logo['sm_logo']);
+    }
+
+    public function _before_update(&$data,$option)
+    {
+        //上传logo
+        if($_FILES['logo']['error'] == 0)
+        {
+            $rootPath = C('IMG_rootPath');
+            $upload = new \Think\Upload(array(
+                'rootPath'=>$rootPath,
+            ));//实例化上传类
+            $upload->maxSize = (int)C('IMG_maxsize')*1024*1024;//上传图片限制大小
+            $upload->exts = C('IMG_exts');//设置附件上传类型
+            $upload->savePath = 'Goods/';//图片二级目录名称
+            //上传文件
+            $info  = $upload->upload();
+            if(!$info)
+            {
+                $this->error = $upload->getError();
+                return false;//返回控制器
+            }
+            else {
+                $logoName = $info['logo']['savepath'] . $info['logo']['savename'];
+                //拼出缩略图文件名
+                $smLogoName = $info['logo']['savepath'] . 'thumb_' . $info['logo']['savename'];
+                //生成缩略图
+                $image = new \Think\Image();
+                //打开要处理的图片
+                $image->open($rootPath . $logoName);
+                $image->thumb(150, 150)->save($rootPath . $smLogoName);
+                //把图片保存数据放到表单保存数据中
+                $data['logo'] = $logoName;
+                $data['sm_logo'] = $smLogoName;
+                //删除原图片
+                $logo = $this->field('logo,sm_logo')->find($option['where']['id']);
+                $rp = C('IMG_rootPath');
+                unlink($rp.$logo['logo']);
+                unlink($rp.$logo['sm_logo']);
+            }
+        }
+    }
 
     //搜索商品
     public function search()
@@ -77,11 +127,28 @@ class GoodsModel extends Model
         {
             $where['price'] = array('elt',$endPrice);
         }
+        //添加时间搜索
+        $startAddtime = I('get.start_addtime');
+        $endAddtime = I('get.end_addtime');
+        if($startAddtime && $endAddtime)
+        {
+            $where['addtime'] = array('between',array(strtotime("$startAddtime 00:00:00"),strtotime("$endAddtime 23:59:59")));
+        }
+        elseif($startAddtime)
+        {
+            $where['addtime'] = array('egt',strtotime("$startAddtime 00:00:00"));
+        }
+        elseif($endAddtime)
+        {
+            $where['addtime'] = array('elt',strtotime("$endAddtime 23:59:59"));
+        }
+        //是否上架
         $isOnSale = I('get.is_on_sale',-1);
         if($isOnSale != -1)
         {
             $where['is_on_sale'] = array('eq',$isOnSale);
         }
+        //是否删除
         $isDelete  = I('get.is_delete',-1);
         if($isDelete != -1)
         {
@@ -112,6 +179,8 @@ class GoodsModel extends Model
         $count =  $this->where($where)->count();
         //生成翻页对象
         $page = new \Think\Page($count,2);
+        $page->setConfig('next','下一页');
+        $page->setConfig('prev','上一页');
         //获取翻页字符串
         $pageString = $page->show();
         //取出当前页数据

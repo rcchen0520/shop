@@ -26,6 +26,8 @@ define('__ADMIN_CSS__','/Public/Admin/Styles');
 define('__ADMIN_JS__','/Public/Admin/Js');
 //定义后台图片路径
 define('__ADMIN_IMG__','/Public/Admin/Images');
+//定义Public目录路径
+define('__PUBLIC__','/Public');
 
 // 引入ThinkPHP入口文件
 require './ThinkPHP/ThinkPHP.php';

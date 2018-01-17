@@ -15,7 +15,7 @@ return array(
     'IMG_exts' => array('jpg','pjpeg','bmp','gif','png','jpeg'),
     'IMG_rootPath' =>'./Public/Uploads/',
     /*************** 修改I函数底层过滤时使用的函数 **********/
-//    'DEFAULT_FILTER' => 'trim.removeXSS',
+    'DEFAULT_FILTER' => 'trim,removeXSS',
     /*********** MD5复杂化的KEY ********/
     'MD5_KEY' => '3D0FFE5291E42782F694FACFF526C22C',
 );
