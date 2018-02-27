@@ -8,6 +8,7 @@ class LoginController extends Controller{
             $username = $_POST['username'];
             $password = $_POST['password'];
             $chkcode = $_POST['chkcode'];
+
             $data['username'] = $username;
             $data['password'] = $password;
             $model = D('Admin');

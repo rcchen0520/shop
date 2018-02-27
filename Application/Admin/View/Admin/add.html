@@ -15,6 +15,17 @@
                 </td>
             </tr>
             <tr>
+                <td class="label">所属角色：</td>
+                <td>
+                    <select name="roleid" id="">
+                        <option value="">请选择所属角色</option>
+                        <?php foreach($roleData as $k => $v):?>
+                        <option value="{$v.id}">{$v['role_name']}</option>
+                        <?php endforeach;?>
+                    </select>
+                </td>
+            </tr>
+            <tr>
                 <td class="label">是否启用 1：启用 0：禁用：</td>
                 <td>
                     <input type="radio" name="is_use" value="1">启用

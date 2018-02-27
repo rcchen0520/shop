@@ -21,7 +21,6 @@ class RoleController extends IndexController
         $priModel = D("Admin/Privilege");
     	$priData = $priModel->getTree();
     	$this->assign("priData",$priData);
-
 		$this->setPageBtn('添加角色', '角色列表', U('lst?p='.I('get.p')));
 		$this->display();
     }

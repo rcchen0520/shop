@@ -8,17 +8,28 @@ class AdminController extends IndexController
     	if(IS_POST)
     	{
     		$model = D('Admin/Admin');
-    		if($model->create(I('post.'), 1))
+    		$post = I('post.');
+    		$post['password'] = md5($post['password'].C('MD5_KEY'));
+            if($model->create($post, 1))
     		{
     			if($id = $model->add())
     			{
-    				$this->success('添加成功！', U('lst?p='.I('get.p')));
-    				exit;
+    			    $adminRoleModel = M('admin_role');
+    			    $ids['admin_id'] = $id;
+    			    $ids['role_id'] = $post['roleid'];
+    			    $res = $adminRoleModel->add($ids);
+    			    if($res)
+                    {
+                        $this->success('添加成功！', U('lst?p='.I('get.p')));
+                        exit;
+                    }
     			}
     		}
     		$this->error($model->getError());
     	}
-
+        $roleMidel = D('Role');
+    	$roleData = $roleMidel->getAllRoles();
+    	$this->assign("roleData",$roleData);
 		$this->setPageBtn('添加管理员', '管理员列表', U('lst?p='.I('get.p')));
 		$this->display();
     }
@@ -66,7 +77,6 @@ class AdminController extends IndexController
     		'data' => $data['data'],
     		'page' => $data['page'],
     	));
-
 		$this->setPageBtn('管理员列表', '添加管理员', U('add'));
     	$this->display();
     }
