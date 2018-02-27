@@ -13,7 +13,7 @@
                 <td>
                     <?php foreach($priData as $k => $v): ?>
                     <?php echo str_repeat('-',$v['level'] * 8); ?>
-                    <input type="checkbox" name="pri_id[]" value="{$v.id}" />{$v.pri_name}<br />
+                    <input type="checkbox" name="pri_id[]" value="{$v.id}" level="{$v.level}"/>{$v.pri_name}<br />
                     <?php endforeach;?>
                 </td>
             </tr>
@@ -27,4 +27,35 @@
     </form>
 </div>
 <script>
+    $(":checkbox").click(function () {
+        //获取当前权限的level值
+        var cur_level = $(this).attr("level");
+        //判断是选中还是取消
+        if($(this).attr("checked"))
+        {
+            var tmplevel = cur_level;
+            var allprev = $(this).prevAll(":checkbox");
+            $(allprev).each(function (k,v) {
+                if($(v).attr("level") < tmplevel)
+                {
+                    tmplevel--;
+                    $(v).attr("checked","checked");
+                }
+            })
+        }
+        else
+        {
+            var allnext = $(this).nextAll(":checkbox");
+            $(allnext).each(function (k,v) {
+                if($(v).attr("level") > cur_level)
+                {
+                    $(v).removeAttr("checked");
+                }
+                else
+                {
+                    return false;
+                }
+            })
+        }
+    })
 </script>
