@@ -36,6 +36,8 @@ class AdminController extends IndexController
     public function edit()
     {
     	$id = I('get.id');
+        $model = M('Admin');
+        $data = $model->find($id);
     	if(IS_POST)
     	{
     		$model = D('Admin/Admin');
@@ -43,16 +45,25 @@ class AdminController extends IndexController
     		{
     			if($model->save() !== FALSE)
     			{
-    				$this->success('修改成功！', U('lst', array('p' => I('get.p', 1))));
-    				exit;
+    			    $arModel = M('admin_role');
+    			    $upRes = $arModel->where(array('admin_id'=>$id))->save(array('role_id'=>I('post.roleid')));
+    			    if($upRes !== false)
+                    {
+                        $this->success('修改成功！', U('lst', array('p' => I('get.p', 1))));
+                        exit;
+                    }
     			}
     		}
     		$this->error($model->getError());
     	}
-    	$model = M('Admin');
-    	$data = $model->find($id);
-    	$this->assign('data', $data);
 
+    	$adminRoleModel = M('admin_role');
+    	$ardata = $adminRoleModel->alias('a')->where(array("admin_id"=>$id))->join("LEFT JOIN rc_role b ON a.role_id = b.id")->find();
+        $roleMidel = D('Role');
+        $roleData = $roleMidel->getAllRoles();
+        $this->assign("roleData",$roleData);
+    	$this->assign('data', $data);
+        $this->assign('arData',$ardata);
 		$this->setPageBtn('修改管理员', '管理员列表', U('lst?p='.I('get.p')));
 		$this->display();
     }
@@ -61,8 +72,13 @@ class AdminController extends IndexController
     	$model = D('Admin/Admin');
     	if($model->delete(I('get.id', 0)) !== FALSE)
     	{
-    		$this->success('删除成功！', U('lst', array('p' => I('get.p', 1))));
-    		exit;
+    	    $arModel = M('admin_role');
+    	    if($arModel->where(array('admin_id'=>I('get.id')))->delete() !== FALSE)
+            {
+                $this->success('删除成功！', U('lst', array('p' => I('get.p', 1))));
+                exit;
+            }
+
     	}
     	else 
     	{
