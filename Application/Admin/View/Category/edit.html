@@ -1,0 +1,103 @@
+<layout name="Index/header_footer" />
+<div class="main-div">
+    <form name="main_form" method="POST" action="__SELF__" enctype="multipart/form-data" >
+    	<input type="hidden" name="id" value="<?php echo $data['id']; ?>" />
+        <table cellspacing="1" cellpadding="3" width="100%">
+			<tr>
+				<td class="label">上级权限：</td>
+				<td>
+					<select name="parent_id">
+						<option value="0">顶级权限</option>
+						<?php foreach ($parentData as $k => $v): ?> 
+						<?php if($v['id'] == $data['id'] || in_array($v['id'], $children)) continue ; ?> 
+						<option <?php if($v['id'] == $data['parent_id']): ?>selected="selected"<?php endif; ?> value="<?php echo $v['id']; ?>"><?php echo str_repeat('-', 8*$v['level']).$v['cat_name']; ?></option>
+						<?php endforeach; ?>					</select>
+				</td>
+			</tr>
+            <tr>
+                <td class="label">分类名称：</td>
+                <td>
+                    <input  type="text" name="cat_name" value="<?php echo $data['cat_name']; ?>" />
+                </td>
+            </tr>
+            <tr>
+                <td class="label">筛选属性：</td>
+                <td>
+                    <ul>
+                        <?php foreach($attrList as $k => $v):
+                            if($k == 0){
+                                $opt = '[+]';
+                            }else{
+                                $opt = '[-]';
+                            }
+                        ?>
+                        <li>
+                            <a href="javascript:void(0);" onclick="addNew(this)">{$opt}</a>
+                            <select name="type_id[]" >
+                                <option value="">选择类型</option>
+                                <?php foreach($typeList as $v1):
+                                    if($v['type_id'] == $v1['id']){
+                                        $select = 'selected';
+                                    }else{
+                                        $select = '';
+                                    }
+                                ?>
+                                <option {$select} value="{$v1.id}">{$v1.type_name}</option>
+                                <?php endforeach;?>
+                            </select>
+                            <select attr_id="{$v.id}" name="attr_id[]" >
+                                <option value="">选择属性</option>
+                            </select>
+                        </li>
+                        <?php endforeach;?>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="99" align="center">
+                    <input type="submit" class="button" value=" 确定 " />
+                    <input type="reset" class="button" value=" 重置 " />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script>
+    function addNew(a){
+        var li = $(a).parent();
+        if($(a).html() == '[+]'){
+            var newli = li.clone(true);
+            newli.find("a").html("[-]");
+            li.after(newli);
+        }else{
+            li.remove();
+        }
+    }
+
+    $("select[name='type_id[]']").change(function(){
+        var _this = $(this);
+        var typeId = $(this).val();
+        var opt = "<option value=''>选择属性</option>";
+        if(typeId != ''){
+            $.ajax({
+                type : "get",
+                url : "<?php echo U('Admin/Goods/ajaxGetAttr','',FALSE);?>/tid/"+typeId,
+                dataType : "json",
+                success:function (data) {
+                    var attr_id = _this.next("select").attr("attr_id");
+                    $(data).each(function (k,v) {
+                        if(v.id == attr_id){
+                            opt += "<option selected value='"+v.id+"'>"+v.attr_name+"</optio    n>";
+                        }else{
+                            opt += "<option value='"+v.id+"'>"+v.attr_name+"</option>";
+                        }
+                    });
+                    _this.next("select").html(opt);
+                }
+            });
+        }else{
+            _this.next("select").html(opt);
+        }
+    });
+    $("select[name='type_id[]']").trigger("change");
+</script>

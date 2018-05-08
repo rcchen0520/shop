@@ -63,4 +63,8 @@ class RoleModel extends Model
     {
         return $this->select();
     }
+
+//    function getRolesByAdminId($adminId){
+//	    return $this->alias("a")->join("right join rc_admin_role b on a.id = b.role_id")->where(array("b.admin_id"=>$adminId))->field('role_name')->select();
+//    }
 }

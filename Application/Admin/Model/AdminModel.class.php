@@ -3,8 +3,8 @@ namespace Admin\Model;
 use Think\Model;
 class AdminModel extends Model
 {
-    protected $insertFields = array('username','password','is_use');
-    protected $updateFields = array('id','username','password','is_use');
+    protected $insertFields = array('username','password','cpassword','is_use');
+    protected $updateFields = array('id','username','password','cpassword','is_use');
     // 登录时表单验证的规则
     public $_login_validate = array(
         array('username', 'require', '用户名不能为空！', 1),
@@ -16,9 +16,11 @@ class AdminModel extends Model
     protected $_validate = array(
         array('username', 'require', '账号不能为空！', 1, 'regex', 3),
         array('username', '1,30', '账号的值最长不能超过 30 个字符！', 1, 'length', 3),
-        array('password', 'require', '密码不能为空！', 1, 'regex', 3),
-        array('password', '1,32', '密码的值最长不能超过 32 个字符！', 1, 'length', 3),
+        array('password', 'require', '密码不能为空！', 1, 'regex', 1),
+        array('password', '1,32', '密码的值最长不能超过 32 个字符！', 1, 'length', 1),
         array('is_use', 'number', '是否启用 1：启用0：禁用必须是一个整数！', 2, 'regex', 3),
+        array('username','','用户名已存在',1,'unique',3),
+        array('cpassword','password',"两次输入的密码不一致",1,'confirm',3),
     );
     public function chk_chkcode($code)
     {
@@ -83,7 +85,7 @@ class AdminModel extends Model
         $page->setConfig('next', '下一页');
         $data['page'] = $page->show();
         /************************************** 取数据 ******************************************/
-        $data['data'] = $this->alias('a')->where($where)->group('a.id')->limit($page->firstRow.','.$page->listRows)->select();
+        $data['data'] = $this->alias('a')->join("left join rc_admin_role b on a.id = b.admin_id left join rc_role c on b.role_id = c.id")->where($where)->limit($page->firstRow.','.$page->listRows)->field('a.id,a.username,a.is_use,c.role_name')->select();
         return $data;
     }
     // 添加前
@@ -93,6 +95,19 @@ class AdminModel extends Model
     // 修改前
     protected function _before_update(&$data, $option)
     {
+        if(($option['where']['id'] == 1) && ($data['is_use'] == 0))
+        {
+            $this->error = "超级管理员不能禁用";
+            return false;
+        }
+        if($data['password'] === '')
+        {
+            unset($data['password']);
+        }
+        else
+        {
+            $data['password'] = md5($data['password'].C('MD5_KEY'));
+        }
     }
     // 删除前
     protected function _before_delete($option)
@@ -101,6 +116,11 @@ class AdminModel extends Model
         {
             $this->error = '不支持批量删除';
             return FALSE;
+        }
+        if($option['where']['id'] == 1)
+        {
+            $this->error = '超级管理员不能删除';
+            return false;
         }
     }
     /************************************ 其他方法 ********************************************/

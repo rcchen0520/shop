@@ -3,6 +3,11 @@ namespace Admin\Controller;
 use \Admin\Controller\IndexController;
 class AdminController extends IndexController 
 {
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     public function add()
     {
     	if(IS_POST)
@@ -10,6 +15,7 @@ class AdminController extends IndexController
     		$model = D('Admin/Admin');
     		$post = I('post.');
     		$post['password'] = md5($post['password'].C('MD5_KEY'));
+    		$post['cpassword'] = md5($post['cpassword'].C('MD5_KEY'));
             if($model->create($post, 1))
     		{
     			if($id = $model->add())
@@ -36,6 +42,10 @@ class AdminController extends IndexController
     public function edit()
     {
     	$id = I('get.id');
+        if((session('id') != 1) && ($id != session('id')))
+        {
+            return $this->error("非超级管理员只能修改自身用户信息！");
+        }
         $model = M('Admin');
         $data = $model->find($id);
     	if(IS_POST)
@@ -46,8 +56,20 @@ class AdminController extends IndexController
     			if($model->save() !== FALSE)
     			{
     			    $arModel = M('admin_role');
-    			    $upRes = $arModel->where(array('admin_id'=>$id))->save(array('role_id'=>I('post.roleid')));
-    			    if($upRes !== false)
+    			    $isexist = $arModel->where(array("admin_id"=>$id))->find();
+    			    if(empty($isexist))
+                    {
+                        $arData = array(
+                            "admin_id" => $id,
+                            "role_id" => I('post.roleid'),
+                        );
+                        $res = $arModel->add($arData);
+                    }
+                    else
+                    {
+                        $res = $arModel->where(array('admin_id'=>$id))->save(array('role_id'=>I('post.roleid')));
+                    }
+    			    if($res !== false)
                     {
                         $this->success('修改成功！', U('lst', array('p' => I('get.p', 1))));
                         exit;

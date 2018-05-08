@@ -1,20 +1,14 @@
 <?php
 namespace Admin\Model;
 use Think\Model;
-class PrivilegeModel extends Model 
+class CategoryModel extends Model 
 {
-	protected $insertFields = array('pri_name','module_name','controller_name','action_name','parent_id');
-	protected $updateFields = array('id','pri_name','module_name','controller_name','action_name','parent_id');
+	protected $insertFields = array('cat_name','parent_id','search_attr_id');
+	protected $updateFields = array('id','cat_name','parent_id','search_attr_id');
 	protected $_validate = array(
-	        array('pri_name','require','权限名称不能为空',1,'regex',3),
-	        array('pri_name','1,30','权限名称长度不能超过30个字符',1,'length',3),
-	        array('module_name','require','模块名称不能为空',1,'regex',3),
-	        array('module_name','1,20','模块名称长度不能超过20个字符',1,'length',3),
-	        array('controller_name','require','控制的名称不能为空',1,'regex',3),
-	        array('controller_name','1,20','控制器名称长度不能超过20个字符',1,'length',3),
-	        array('action_name','1,20','方法名称长度不能超过20个字符',1,'length',3),
-	        array('action_name','require','方法名称不能为空',1,'regex',3),
-	        array('parent_id','number','上级权限id必须为一个整数',2,'regex',3),
+		array('cat_name', 'require', '分类名称不能为空！', 1, 'regex', 3),
+		array('cat_name', '1,30', '分类名称的值最长不能超过 30 个字符！', 1, 'length', 3),
+		array('parent_id', 'number', '上级分类的ID，0：代表顶级必须是一个整数！', 2, 'regex', 3),
 	);
 	/************************************* 递归相关方法 *************************************/
 	public function getTree()
@@ -67,7 +61,30 @@ class PrivilegeModel extends Model
 		if($children)
 		{
 			$children = implode(',', $children);
-			$this->execute("DELETE FROM rc_privilege WHERE id IN($children)");
+			$this->execute("DELETE FROM rc_category WHERE id IN($children)");
 		}
 	}
+
+	public function _before_insert(&$data,$option){
+        $attr_id = I('post.attr_id');
+        foreach($attr_id as $k => $v){
+            if(empty($v)){
+                unset($attr_id[$k]);
+            }
+        }
+        if($attr_id){
+            $data['search_attr_id'] = implode(',',$attr_id);
+        }
+    }
+
+    public function _before_update(&$data,$option){
+        $attrId = I('post.attr_id');
+        // 循环把没有选择的属性删除掉
+        foreach ($attrId as $k => $v)
+        {
+            if(empty($v))
+                unset($attrId[$k]);
+        }
+        $data['search_attr_id'] = (string)implode(',', $attrId);
+    }
 }

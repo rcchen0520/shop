@@ -20,18 +20,21 @@
 	<table cellpadding="3" cellspacing="1">
     	<tr>
             <th >账号</th>
-            <th >密码</th>
+            <th >角色</th>
             <th >是否启用 1：启用 0：禁用</th>
 			<th width="60">操作</th>
         </tr>
 		<?php foreach ($data as $k => $v): ?>            
 			<tr class="tron">
 				<td><?php echo $v['username']; ?></td>
-				<td><?php echo $v['password']; ?></td>
-				<td><?php echo $v['is_use']; ?></td>
+				<td><?php echo $v['role_name']; ?></td>
+				<td><?php echo $v['is_use']?'启用':'禁用'; ?></td>
 		        <td align="center">
-		        	<a href="<?php echo U('edit?id='.$v['id'].'&p='.I('get.p')); ?>" title="编辑">编辑</a> |
-	                <a href="<?php echo U('delete?id='.$v['id'].'&p='.I('get.p')); ?>" onclick="return confirm('确定要删除吗？');" title="移除">移除</a> 
+		        	<a href="<?php echo U('edit?id='.$v['id'].'&p='.I('get.p')); ?>" title="编辑">编辑</a>
+					<?php if($v['id'] > 1): ?>
+					|
+	                <a href="<?php echo U('delete?id='.$v['id'].'&p='.I('get.p')); ?>" onclick="return confirm('确定要删除吗？');" title="移除">移除</a>
+					<?php endif;?>
 		        </td>
 	        </tr>
         <?php endforeach; ?> 

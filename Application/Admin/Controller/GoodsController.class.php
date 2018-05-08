@@ -1,8 +1,7 @@
 <?php
 namespace Admin\Controller;
-use Think\Controller;
 
-class GoodsController extends Controller
+class GoodsController extends IndexController
 {
     public function add ()
     {
@@ -64,5 +63,11 @@ class GoodsController extends Controller
         $info = $model->find($id);
         $this->assign('info',$info);
         $this->display();
+    }
+
+    public function ajaxGetAttr(){
+        $attrModel = D('Admin/Attribute');
+        $attrList = $attrModel->search();
+        echo json_encode($attrList['data']);
     }
 }
